@@ -50,9 +50,19 @@ resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
 
+const loaderDiv = document.getElementById("loader");
+let loadedImages = 0;
+
 for (let i = 0; i < frameCount; i++) {
     const img = new Image();
     img.src = currentFrame(i);
+    img.onload = () => {
+        loadedImages++;
+        if (loadedImages === frameCount) {
+            loaderDiv.style.display = "none";
+            startGSAP(); // Solo aquí activamos GSAP
+        }
+    };
     images.push(img);
 }
 
@@ -90,106 +100,109 @@ function mostrarbloqueFrame(scroll) {
 
 }
 
-gsap.to(animationState, {
-    frame: frameCount - 1,
-    snap: "current",
-    ease: "none",
-    scrollTrigger: {
-        trigger: '#scroll-section',
-        scrub: true,
-        pin: true,
-        start: "top top",
-        end: "+=5000",
-        onLeave: () => {
-            document.getElementById("two-section").scrollIntoView({ behavior: "smooth" });
-        }
-    },
-    onUpdate: () => {
-        const currentFrame = Math.round(animationState.frame);
-        render(currentFrame);
-        mostrarTextoPorFrame(currentFrame);
-    }
-});
+function startGSAP() {
 
-images[0].onload = render;
-
-let mm = gsap.matchMedia();
-
-mm.add("(min-width: 900px)", () => {
-
-    gsap.registerPlugin(ScrollTrigger);
-
-    ScrollTrigger.create({
-        trigger: "#two-section",
-        start: "top top",
-        end: "+=1500",
-        pin: true,
-        pinSpacing: true,
-        onUpdate: (self) => {
-            const scroll = self.progress.toFixed(2);
-            mostrarbloqueFrame(scroll);
+    gsap.to(animationState, {
+        frame: frameCount - 1,
+        snap: "current",
+        ease: "none",
+        scrollTrigger: {
+            trigger: '#scroll-section',
+            scrub: true,
+            pin: true,
+            start: "top top",
+            end: "+=5000",
+            onLeave: () => {
+                document.getElementById("two-section").scrollIntoView({ behavior: "smooth" });
+            }
+        },
+        onUpdate: () => {
+            const currentFrame = Math.round(animationState.frame);
+            render(currentFrame);
+            mostrarTextoPorFrame(currentFrame);
         }
     });
 
-    const cards = gsap.utils.toArray(".card");
-    let centerIndex = 2;
-    const spacing = 220;
+    images[0].onload = render;
 
-    function updateCards() {
-        cards.forEach((card, i) => {
-            const offset = i - centerIndex;
-            const x = offset * spacing;
-            const y = Math.pow(offset, 2) * 20 + 80;
-            const scale = offset === 0 ? 1.2 : 0.9;
-            const rotateZ = offset * 10;
-            const zIndex = 100 - Math.abs(offset);
-            const opacity = Math.abs(offset) > 2 ? 0 : 1;
+    let mm = gsap.matchMedia();
 
-            gsap.to(card, {
-                duration: 0.5,
-                x,
-                y,
-                scale,
-                rotateZ,
-                zIndex,
-                opacity,
-                ease: "power2.out"
-            });
-        });
-    }
+    mm.add("(min-width: 900px)", () => {
 
-    function goToNext() {
-        centerIndex = (centerIndex + 1) % cards.length;
-        updateCards();
-    }
+        gsap.registerPlugin(ScrollTrigger);
 
-    function goToPrev() {
-        centerIndex = (centerIndex - 1 + cards.length) % cards.length;
-        updateCards();
-    }
-
-    cards.forEach(card => {
-        Draggable.create(card, {
-            type: "x",
-            inertia: false,
-            onDragEnd: function () {
-                if (this.getDirection() === "left" && this.endX < -50) {
-                    goToNext();
-                } else if (this.getDirection() === "right" && this.endX > 50) {
-                    goToPrev();
-                } else {
-                    updateCards();
-                }
+        ScrollTrigger.create({
+            trigger: "#two-section",
+            start: "top top",
+            end: "+=1500",
+            pin: true,
+            pinSpacing: true,
+            onUpdate: (self) => {
+                const scroll = self.progress.toFixed(2);
+                mostrarbloqueFrame(scroll);
             }
         });
+
+        const cards = gsap.utils.toArray(".card");
+        let centerIndex = 2;
+        const spacing = 220;
+
+        function updateCards() {
+            cards.forEach((card, i) => {
+                const offset = i - centerIndex;
+                const x = offset * spacing;
+                const y = Math.pow(offset, 2) * 20 + 80;
+                const scale = offset === 0 ? 1.2 : 0.9;
+                const rotateZ = offset * 10;
+                const zIndex = 100 - Math.abs(offset);
+                const opacity = Math.abs(offset) > 2 ? 0 : 1;
+
+                gsap.to(card, {
+                    duration: 0.5,
+                    x,
+                    y,
+                    scale,
+                    rotateZ,
+                    zIndex,
+                    opacity,
+                    ease: "power2.out"
+                });
+            });
+        }
+
+        function goToNext() {
+            centerIndex = (centerIndex + 1) % cards.length;
+            updateCards();
+        }
+
+        function goToPrev() {
+            centerIndex = (centerIndex - 1 + cards.length) % cards.length;
+            updateCards();
+        }
+
+        cards.forEach(card => {
+            Draggable.create(card, {
+                type: "x",
+                inertia: false,
+                onDragEnd: function () {
+                    if (this.getDirection() === "left" && this.endX < -50) {
+                        goToNext();
+                    } else if (this.getDirection() === "right" && this.endX > 50) {
+                        goToPrev();
+                    } else {
+                        updateCards();
+                    }
+                }
+            });
+        });
+
+        updateCards();
+
+        return () => {
+            scrollTrigger.kill();
+            draggables.forEach(d => d.kill());
+        };
+
     });
-
-    updateCards();
-
-    return () => {
-        scrollTrigger.kill();
-        draggables.forEach(d => d.kill());
-    };
-
-});
+}
 
