@@ -452,30 +452,28 @@ p {
     width: 100vw;
     height: 100vh;
     background: #000;
-    /* fondo negro */
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
 }
 
-/* Spinner circular */
+
 .spinner {
     width: 50px;
     height: 50px;
-    border: 5px solid #fff;
+    border: 5px solid white;
     border-top: 5px solid transparent;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
 
-/* Animación giratoria */
 @keyframes spin {
-    0% {
+    from {
         transform: rotate(0deg);
     }
 
-    100% {
+    to {
         transform: rotate(360deg);
     }
 }
