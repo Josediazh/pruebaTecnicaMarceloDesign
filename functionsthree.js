@@ -15,7 +15,7 @@ const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
 scene.add(light);
 
 const loader = new GLTFLoader();
-loader.load('/model/swan_compressed_webp.glb', (gltf) => {
+loader.load('./model/swan_compressed_webp.glb', (gltf) => {
     scene.add(gltf.scene);
 }, undefined, (error) => {
     console.error('Error al cargar el modelo:', error);
