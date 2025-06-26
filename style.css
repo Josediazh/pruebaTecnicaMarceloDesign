@@ -228,6 +228,13 @@ p {
     overflow: hidden;
 }
 
+@media (320px < width < 640px) {
+    #two-section .contentportada .bloque .imgseciontwo {
+        width: 100%;
+        height: auto;
+    }
+}
+
 #two-section .contentportada .bloque .imgseciontwo img {
     object-fit: fill;
     width: 100%;
